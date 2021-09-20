@@ -14,10 +14,10 @@ var fileName = ''
 
 var mysql = require('mysql');
 var connection = mysql.createConnection({
-  host: 'localhost',
+  host: '47.94.228.127',
   user: 'root',
-  password: '',
-  database: 'test',
+  password: 'GMJgao12138-',
+  database: 'sign',
 });
 
 var storage = multer.diskStorage({
@@ -139,8 +139,24 @@ app.post('/upload', function (req, res, next) {
 app.use('/tags', tagsRouter);
 
 app.post('/save', function (req, res, next) {
-  
-  var workerProcess = child_process.exec('python3 wordHandlerWrite.py ' + './uploads/' + req.body.fileName + ` '${JSON.stringify(req.body)}'`, function (error, stdout, stderr) {
+  let cellData = {}
+  Object.keys(req.body.data).forEach(key => {
+    if (req.body.data[key].value.match(/^data:image\/png;base64,/)) {
+      base64Data = req.body.data[key].value.replace(/^data:image\/png;base64,/,"")
+      binaryData = new Buffer(base64Data, 'base64').toString('binary');
+      require("fs").writeFile(`./public/${req.body.fileName}.png`, binaryData, "binary", function(err) {
+        console.log(err); // writes out file without error, but it's not a valid image
+      })
+      req.body.data[key].value = `./public/${req.body.fileName}.png`
+    }
+    cellData[req.body.data[key].name] = req.body.data[key].value
+    
+  })
+  let titleData = {}
+  Object.keys(req.body.formTitle).forEach(key => {
+    titleData[req.body.formTitle[key].name] = req.body.formTitle[key].value
+  })
+  var workerProcess = child_process.exec('python3 wordHandlerWrite.py ' + './uploads/' + req.body.fileName + ` '${JSON.stringify(cellData)}'` + ` '${JSON.stringify(titleData)}'`, function (error, stdout, stderr) {
     if (error) {
       console.log(error.stack);
       console.log('Error code: ' + error.code);
@@ -148,7 +164,10 @@ app.post('/save', function (req, res, next) {
     }
     console.log('stdout: ' + stdout);
     console.log('stderr: ' + stderr);
-    res.send(jsonWrite(res, '修改成功'))
+    console.log('修改成功')
+    res.send(jsonWrite(res, {
+      msg: req.body.fileName
+    }))
     // var obj = JSON.parse(stdout);
     // req.tableArr = obj.title.concat(obj.cell);
     // res.send(jsonWrite(res, JSON.parse(stdout)));

@@ -4,123 +4,101 @@
  * Module dependencies.
  */
 
-var app = require('../app');
-var debug = require('debug')('helloworld:server');
-var http = require('http');
-
-/**
- * Get port from environment and store in Express.
- */
-
-var port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
-
-/**
- * Create HTTP server.
- */
-
-var server = http.createServer(app);
-
-// var socketConnect = require('../socket/index')
-// const io = require("socket.io")(server,{
-//   cors: {
-//     origin: "http://139.196.85.119:8080",
-//     methods: ["GET", "POST"]
-//   }
-// });
-
-// io.on('connection', function (socket) {
-//   socketConnect(io, socket)
-// });
-
-
-const io = require('socket.io');
-var servIo = io(server, {
+ var app = require("../app");
+ var debug = require("debug")("helloworld:server");
+ var http = require("http");
+ 
+ /**
+  * Get port from environment and store in Express.
+  */
+ 
+ var port = normalizePort(process.env.PORT || "3000");
+ app.set("port", port);
+ 
+ /**
+  * Create HTTP server.
+  */
+ 
+ var server = http.createServer(app);
+ var io = require("socket.io")(server, {
   cors: {
-    origin: "http://139.196.85.119:8080/",
+    origin: "http://192.168.31.250:8080",
+    credentials: true,
     methods: ["GET", "POST"]
   },
-  handlePreflightRequest: (req, res) => {
-      const headers = {
-          "Access-Control-Allow-Headers": "Content-Type, Authorization",
-          "Access-Control-Allow-Origin": req.headers.origin, //or the specific origin you want to give access to,
-          "Access-Control-Allow-Credentials": true
-      };
-      res.writeHead(200, headers);
-      res.end();
-  }
-});
-servIo.on('connection', function (socket) {
-    setInterval(function () {
-        socket.emit('second', { 'second': new Date().getSeconds() });
-    }, 1000);
-});
-
-/**
- * Listen on provided port, on all network interfaces.
- */
-
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
-
-/**
- * Normalize a port into a number, string, or false.
- */
-
-function normalizePort(val) {
-  var port = parseInt(val, 10);
-
-  if (isNaN(port)) {
-    // named pipe
-    return val;
-  }
-
-  if (port >= 0) {
-    // port number
-    return port;
-  }
-
-  return false;
-}
-
-/**
- * Event listener for HTTP server "error" event.
- */
-
-function onError(error) {
-  if (error.syscall !== 'listen') {
-    throw error;
-  }
-
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
-
-  // handle specific listen errors with friendly messages
-  switch (error.code) {
-    case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
-      process.exit(1);
-      break;
-    case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
-      process.exit(1);
-      break;
-    default:
-      throw error;
-  }
-}
-
-/**
- * Event listener for HTTP server "listening" event.
- */
-
-function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('Listening on ' + bind);
-}
-
+  allowEIO3: true
+ });
+ 
+ io.on("connection", (socket) => {
+   // 监听客户端发送的信息
+   socket.on("sendImg", (message) => {
+     console.log(message)
+     // 给客户端返回信息
+     io.emit("getImg", message);
+   });
+ });
+ 
+ /**
+  * Listen on provided port, on all network interfaces.
+  */
+ 
+ server.listen(port);
+ server.on("error", onError);
+ server.on("listening", onListening);
+ 
+ /**
+  * Normalize a port into a number, string, or false.
+  */
+ 
+ function normalizePort(val) {
+   var port = parseInt(val, 10);
+ 
+   if (isNaN(port)) {
+     // named pipe
+     return val;
+   }
+ 
+   if (port >= 0) {
+     // port number
+     return port;
+   }
+ 
+   return false;
+ }
+ 
+ /**
+  * Event listener for HTTP server "error" event.
+  */
+ 
+ function onError(error) {
+   if (error.syscall !== "listen") {
+     throw error;
+   }
+ 
+   var bind = typeof port === "string" ? "Pipe " + port : "Port " + port;
+ 
+   // handle specific listen errors with friendly messages
+   switch (error.code) {
+     case "EACCES":
+       console.error(bind + " requires elevated privileges");
+       process.exit(1);
+       break;
+     case "EADDRINUSE":
+       console.error(bind + " is already in use");
+       process.exit(1);
+       break;
+     default:
+       throw error;
+   }
+ }
+ 
+ /**
+  * Event listener for HTTP server "listening" event.
+  */
+ 
+ function onListening() {
+   var addr = server.address();
+   var bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
+   debug("Listening on " + bind);
+ }
+ 

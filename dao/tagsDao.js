@@ -167,10 +167,8 @@ module.exports = {
         if (result) {
           result = {
             code: 200,
-            msg: {
-              url: url,
-              time: time
-            }
+            url: url,
+            time: time
           };
         }
 
