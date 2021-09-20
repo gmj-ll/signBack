@@ -77,6 +77,12 @@ app.use(allowCors);//使用跨域中间件
 //   res.send('Hello GET get');
 // })
 app.use(express.static('public'));
+
+app.get('/', function (req, res, next) {
+  var fs = require('fs');
+  const html  = fs.readFileSync('./public/dist/index.html', 'utf8')
+  res.send(html)
+})
 app.post('/uploadImg', function(req, res, next){
   var fs = require('fs');
   //接收前台POST过来的base64
@@ -178,10 +184,6 @@ app.post('/save', function (req, res, next) {
 
   // tempWordMessage[fileName] = req.body
   // console.log(tempWordMessage)
-})
-
-app.get('/download', function (req, res, next) {
-  res.download('demo.docx')
 })
 
 // app.get('/getTags', function (req, res) {
